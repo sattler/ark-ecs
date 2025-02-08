@@ -1,0 +1,4 @@
+*.swp
+*.log
+public_suffix_list.dat
+src/__pycache__/

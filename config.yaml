@@ -1,0 +1,35 @@
+# The address family to use (1: IPv4; 2: IPv6)
+address_family_number: 1
+
+# The source prefix length to be used in ECS-enabled queries
+source_prefix_length: 24
+
+# The breadth of the source address space to consider, specified as one or more prefixes of arbitrary length.
+# Do not set host bits.
+source_address_space:
+  - 130.89.0.0/16
+  - 192.172.226.0/24
+  #- 2001:0db8:85a3::/56
+
+# The per-prefix-length probe limit. This limits the number of probes sent with a source prefix length
+# of 'source_prefix_length' under any of its ancestor prefixes. This helps press the number of probes
+# sent, especially in IPv6 cases.
+# e.g.: a '16: 16' limit alongside a 'source_prefix_length' of 24 will limit the number of SPL /24 queries to 16
+#       under any /16 prefix in the source address space, whereas 256 /24 blocks could be sent (depending on if any scoped response is received)
+per_prefix_probe_limit:
+  16: 256
+  20: 16
+
+# The Ark vantage points to use
+# use helper script: 'list-ark-vps.py'
+use_ark_vantage_points:
+  - bre-de.ark.caida.org
+  - san2-us.ark.caida.org
+  - hnd-jp.ark.caida.org
+  - sao3-br.ark.caida.org
+  - akl2-nz.ark.caida.org
+
+# The maximum number of parallel domains to scan. This limit does
+# not apply to the NS lookups and NS address resolution.
+max_parallel_domains: 10
+
