@@ -73,13 +73,14 @@ def main():
     parser.add_argument("--output_basedir", type=str, required=True, help="Base directory for output data")
     parser.add_argument("--mux", type=str, required=True, help="The multiplexing socket for Scamper Control.")
     parser.add_argument('--ignore-response-scope', action='store_true', help='if set code will ignore the scope prefix lengt when scheduling measurements')
+    parser.add_argument('--scan-all-bgp', action='store_true', help='Force the scan of all prefixes from the prefix list as client subnet')
     args = parser.parse_args()
 
 	# Init logging
     logger = init_logger(args.output_basedir)
 
     # Create ECSplorer Configurator and load (and process/validate) config file
-    ecs_c = ECSplorerConfigurator(logger, args.config, args.domains_list, args.prefixes_list, args.output_basedir, args.ignore_response_scope)
+    ecs_c = ECSplorerConfigurator(logger, args.config, args.domains_list, args.prefixes_list, args.output_basedir, args.ignore_response_scope, args.scan_all_bgp)
     ecs_c.load_config_file()
     ecs_c.load_domains_list_file()
 

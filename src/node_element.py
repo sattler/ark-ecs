@@ -119,8 +119,15 @@ class Node(TrieElement):
         #     logging.debug(f"trie: finish scanning special prefix {convert_ip_from_field_to_net_ip(current_prefix_up_to_this, ipv6_scan)}/{depth}")
         #     return FINISHED_SCANNING
 
-        # total_unannounced_limit_hit = self.scans_unannounced + self.scans_announced >= total_notrouted_limit
-        default_mode = ScanningMode.SAMPLE_MODE # if not total_unannounced_limit_hit else BGP_MODE
+        total_unannounced_limit_hit = self.scans_unannounced + self.scans_announced >= 0 # self.config.get_total_notrouted_limit()
+        default_mode = ScanningMode.SAMPLE_MODE if not total_unannounced_limit_hit else ScanningMode.BGP_MODE
+
+        if self.is_marked_in_response():
+            if self.any_not_finished_bgp_subnets_left(current_prefix_up_to_this) and self.config.scan_all_bgp:
+                return ScanningMode.BGP_PREFIX_MODE
+            else:
+                self.logger.debug(f"trie: finish scanning as marked in response {convert_ip_from_field_to_net_ip(current_prefix_up_to_this, self.config.get_config_address_family() == 6)}/{depth}")
+                return ScanningMode.FINISHED_SCANNING
 
         # no_limits = (self.config.get_config_prefix_limits()[PrefixType.BGPANNOUNCED][depth] == 0 and
         #              self.config.get_config_prefix_limits()[PrefixType.UNANNOUNCED][depth] == 0 and
@@ -129,15 +136,6 @@ class Node(TrieElement):
         no_limits = self.config.get_config_prefix_limits().get(depth, 0) == 0
         if no_limits:
             return default_mode
-
-        if self.is_marked_in_response():
-            # if self.any_not_finished_bgp_subnets_left(current_prefix_up_to_this):
-            #     return BGP_PREFIX_MODE
-            # else:
-            #     debuglog(f"trie: finish scanning as marked in response {convert_ip_from_field_to_net_ip(current_prefix_up_to_this, ipv6_scan)}/{depth}")
-            #     return FINISHED_SCANNING
-            logging.getLogger(__name__).debug(f"trie: finish scanning as marked in response {convert_ip_from_field_to_net_ip(current_prefix_up_to_this, self.config.get_config_address_family() == 6)}/{depth}")
-            return ScanningMode.FINISHED_SCANNING
 
         # total_limit_hit = self.config.get_config_prefix_limits()[TOTAL][depth] and self.config.get_config_prefix_limits()[TOTAL][depth] <= self.scans_unannounced + self.scans_announced
         # announced_limit_hit = self.config.get_config_prefix_limits()[BGPANNOUNCED][depth] and self.config.get_config_prefix_limits()[BGPANNOUNCED][depth] <= self.scans_announced
@@ -148,7 +146,7 @@ class Node(TrieElement):
         if announced_limit_hit:
             bgp_left = self.any_not_finished_bgp_subnets_left(current_prefix_up_to_this)
             # if total_limit_hit or announced_limit_hit:
-            if bgp_left:
+            if bgp_left and self.config.scan_all_bgp:
                 return ScanningMode.BGP_PREFIX_MODE
             else:
                 logging.getLogger(__name__).debug(f"trie: finish scanning - limit hit {announced_limit_hit} --- {convert_ip_from_field_to_net_ip(current_prefix_up_to_this, self.config.get_config_address_family() == 6)}/{depth}")

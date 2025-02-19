@@ -36,7 +36,7 @@ MAX_SOURCE_PREFIX_LENGTH = {
 
 class ECSplorerConfigurator:
 
-    def __init__(self, logger, config_fpath, domains_fpath, prefixes_fpath, output_basedir, ignore_response_scope):
+    def __init__(self, logger, config_fpath, domains_fpath, prefixes_fpath, output_basedir, ignore_response_scope, scan_all_bgp):
 
         # Logger
         self.logger = logger
@@ -51,6 +51,7 @@ class ECSplorerConfigurator:
         self.source_prefix_list = []
         self.source_prefixes = collections.defaultdict(list)
         self.ignore_response_scope = ignore_response_scope
+        self.scan_all_bgp = scan_all_bgp
 
     def load_domains_list_file(self):
         """Loads domain names from the domains list file."""
